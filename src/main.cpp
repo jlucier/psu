@@ -4,7 +4,7 @@
 #include <INA226_WE.h>
 
 #define DISPLAY_REFRESH_MILLIS 500
-#define SENSE_MILLIS 100
+#define SENSE_MILLIS 250
 // #define PRINT_TIMING
 
 unsigned long last_sense = 0;
@@ -23,37 +23,40 @@ void break_line() {
   display.setCursor(0, display.getCursorY() + display.getMaxCharHeight());
 }
 
-template<typename T>
-void print_labeled(const char* label, T value, bool newline=true) {
+void print_labeled(float value, const char* label, int precision=3, bool newline=true) {
+  if (value >= 0)
+    display.print(" ");
+  display.print(value, 3);
+
+  int w = display.getWidth();
+  display.setCursor(w - display.getStrWidth(label), display.getCursorY());
   display.print(label);
-  display.print(": ");
-  display.print(value);
   if (newline)
     break_line();
 }
 
-void print_milli(const char* label, char unit, float val, bool newline=true) {
+void print_milli(float val, const char* unit, bool newline=true) {
   static char final[50];
   if (val > 1000) {
-    sprintf(final, "%s [%c]", label, unit);
-    print_labeled(final, val / 1000, newline);
+    print_labeled(val / 1000, unit, newline);
   } else {
-    sprintf(final, "%s [m%c]", label, unit);
-    print_labeled(final, val, newline);
+    sprintf(final, "m%s", unit);
+    print_labeled(val, final, newline);
   }
 }
 
 void gui_update() {
   display.firstPage();
   do {
-    display.setFont(u8g2_font_t0_11_tf);
-    display.setCursor(0, 10);
+    // display.setFont(u8g2_font_crox3hb_tf);
+    display.setFont(u8g2_font_sisterserif_tr);
+    display.setCursor(0, 18);
 
-    // print_labeled("Shunt [mV]", shuntVoltage_mV);
-    // print_labeled("Bus [V]", busVoltage_V);
-    print_labeled("Load [V]", loadVoltage_V);
-    print_milli("Current", 'A', current_mA);
-    print_milli("Power", 'W', power_mW);
+    print_labeled(loadVoltage_V, "V");
+    // print_labeled(busVoltage_V, "V (Bus)");
+    print_milli(current_mA, "A");
+    print_milli(power_mW, "W");
+    print_milli(shuntVoltage_mV, "V (sh)");
     // print_labeled("Update", millis());
   } while ( display.nextPage() );
 }
@@ -82,8 +85,8 @@ void setup() {
   ina226.init();
   ina226.setCorrectionFactor(0.6);
   ina226.setResistorRange(0.100, 3.5);
-  ina226.setAverage(AVERAGE_64);
-  ina226.setConversionTime(CONV_TIME_588);
+  ina226.setAverage(AVERAGE_16);
+  ina226.setConversionTime(CONV_TIME_8244);
   ina226.waitUntilConversionCompleted();
 }
 
