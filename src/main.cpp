@@ -78,16 +78,18 @@ void sense() {
 void setup() {
   Serial.begin(9600);
   Wire.begin();
+  Serial.println("Starting setup...");
 
   // display.setBusClock(100000);
   display.begin();
 
   ina226.init();
   ina226.setCorrectionFactor(0.6);
-  ina226.setResistorRange(0.100, 3.5);
+  ina226.setResistorRange(0.005, 3.5);
   ina226.setAverage(AVERAGE_16);
   ina226.setConversionTime(CONV_TIME_8244);
   ina226.waitUntilConversionCompleted();
+  Serial.println("Setup complete");
 }
 
 void loop() {
