@@ -80,12 +80,11 @@ void setup() {
   Wire.begin();
   Serial.println("Starting setup...");
 
-  // display.setBusClock(100000);
   display.begin();
 
   ina226.init();
-  ina226.setCorrectionFactor(0.6);
-  ina226.setResistorRange(0.005, 3.5);
+  // ina226.setCorrectionFactor(0.6);
+  ina226.setResistorRange(0.002, 3);
   ina226.setAverage(AVERAGE_16);
   ina226.setConversionTime(CONV_TIME_8244);
   ina226.waitUntilConversionCompleted();
