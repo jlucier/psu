@@ -24,8 +24,6 @@ void break_line() {
 }
 
 void print_labeled(float value, const char* label, int precision=3, bool newline=true) {
-  if (value >= 0)
-    display.print(" ");
   display.print(value, 3);
 
   int w = display.getWidth();
@@ -48,15 +46,14 @@ void print_milli(float val, const char* unit, bool newline=true) {
 void gui_update() {
   display.firstPage();
   do {
-    // display.setFont(u8g2_font_crox3hb_tf);
-    display.setFont(u8g2_font_sisterserif_tr);
+    display.setFont(u8g2_font_profont22_tf);
     display.setCursor(0, 18);
 
     print_labeled(loadVoltage_V, "V");
     // print_labeled(busVoltage_V, "V (Bus)");
     print_milli(current_mA, "A");
     print_milli(power_mW, "W");
-    print_milli(shuntVoltage_mV, "V (sh)");
+    // print_milli(shuntVoltage_mV, "V (sh)");
     // print_labeled("Update", millis());
   } while ( display.nextPage() );
 }
@@ -64,10 +61,19 @@ void gui_update() {
 void sense() {
   ina226.readAndClearFlags();
   shuntVoltage_mV = ina226.getShuntVoltage_mV();
+  shuntVoltage_mV = max(shuntVoltage_mV, 0.0f);
+
   busVoltage_V = ina226.getBusVoltage_V();
+  busVoltage_V = max(busVoltage_V, 0.0f);
+
   current_mA = ina226.getCurrent_mA();
+  current_mA = max(current_mA, 0.0f);
+
   power_mW = ina226.getBusPower();
+  power_mW = current_mA > 0.0f ? power_mW : 0.0f;
+
   loadVoltage_V  = busVoltage_V + (shuntVoltage_mV/1000);
+  loadVoltage_V = max(loadVoltage_V, 0.0f);
 
   if(ina226.overflow){
     Serial.println("Overflow! Choose higher current range");
